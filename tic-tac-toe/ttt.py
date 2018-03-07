@@ -1,6 +1,6 @@
 #!python
-import sys
 from IPython.display import clear_output
+import sys
 from random import *
 
 next_player = {'X':'O', 'O':'X'}
@@ -53,17 +53,17 @@ def is_draw(board, player):
                     return False;
     return True
 
-def get_num():
-    c = input(f" Choose a cell (number 1-9, or q): ")
-    while not c.lower() in ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'q']:
-        c = input(f" invalid input: Choose a cell (number 1-9, or q): ")
-    return c.lower()
+def get_num(player):
+    c = input(f"           Player {player} choose a cell (number 1-9, or q): ").lower()
+    while not c in ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'q']:
+        c = input(f" Oops! Choose a cell (number 1-9, or q): ").lower()
+    return c
 
 def validate_cell(board, cell):
     return board[cell[0]][cell[1]] == ' '
 
-def get_cell(board):
-    num = get_num()
+def get_cell(board, player):
+    num = get_num(player)
     while num != 'q':
         cell = [(2,0),(2,1),(2,2),
                 (1,0),(1,1),(1,2),
@@ -71,8 +71,7 @@ def get_cell(board):
         if validate_cell(board, cell):
             return cell
         else:
-            print("ERROR: that cell is already taken")
-            num = get_num()
+            print("Oops: That cell is already taken")
     else:
         return 'q'
 
@@ -82,18 +81,17 @@ def set_cell(board, player, cell):
 
 def play(player):
     board = create_board()
+    display_board(board)
     quit = False
     while not quit:
-        display_board(board)
-        print(f"Player {player}:")
-        cell = get_cell(board)
+        cell = get_cell(board, player)
         if cell == 'q':
             quit = True
             continue
         set_cell(board, player, cell)
         display_board(board)
         if is_winner(board):
-            print(f"\nWinner! {player}")
+            print(f"\n{player} is the Winner!")
             return
         elif is_draw(board, player):
             print("\nDraw")
