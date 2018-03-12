@@ -4,7 +4,7 @@ Tests for blackjack module
 '''
 
 import unittest
-from blackjack import Deck, Card
+from blackjack import Deck, Card, Pack
 
 class TestDeck(unittest.TestCase):
 
@@ -21,5 +21,13 @@ class TestDeck(unittest.TestCase):
         self.assertEqual(len(deck), 0)
         self.assertEqual(len(cards), 52)
 
+class TestPack(unittest.TestCase):
+
+    def test_init(self):
+        num_decks = 4;
+        deck = Deck()
+        pack = Pack([deck.copy()]*num_decks)
+        self.assertEqual(len(pack), num_decks*len(deck))
+        
 if __name__ == "__main__":
     unittest.main()

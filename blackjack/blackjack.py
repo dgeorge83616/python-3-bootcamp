@@ -1,4 +1,7 @@
 #!python
+
+import random
+
 '''
 BLACKJACK GAME
 '''
@@ -27,37 +30,62 @@ class Card:
         ''' Return just the suit of this card '''
         return self.suit
 
-class Deck:
+MARKER = Card("MARKER", "MARKER")
+
+class Deck(list):
     '''
     DECK
     '''
     def __init__(self):
-        self.cards = []
+        pass
+
+    def fill_deck():
+        ''' Put cards into the deck '''
         for suit in SUITS:
             for i in range(2, 11):
-                self.cards.append(Card(suit, str(i)))
+                self.append(Card(suit, str(i)))
             for name in NAMES:
-                self.cards.append(Card(suit, name))
-
-    def __str__(self):
-        print_string = str()
-        for i, card in enumerate(self.cards):
-            print_string += str(i) + ": " + str(card) + "\n"
-        return print_string
-
-    def __len__(self):
-        ''' Return the number of cards still in the deck '''
-        return len(self.cards)
+                self.append(Card(suit, name))
 
     def take_next(self):
         ''' Take a card from the "top" of the deck '''
-        return self.cards.pop(0)
+        return self.pop(0)
 
     def take_all(self):
         ''' Take all the cards out of the deck '''
-        cards = self.cards.copy()
-        self.cards.clear()
+        cards = self.copy()
+        self.clear()
         return cards
+
+    def shuffle(self):
+
+
+class Pack(Deck):
+    ''' Holds the decks that will be used for the table '''
+
+    def __init__(self, decks):
+        for deck in decks:
+            self.cards += deck.take_all()
+
+    def __len__(self):
+        '''
+        Return the number of cards still in the pack
+        '''
+        return len(self.cards)
+
+    def insert_marker(self, position):
+        ''' As named '''
+        self.cards.insert(position, MARKER)
+
+class Hand:
+    pass
+
+class Player:
+    pass
+
+class Dealer:
+    pass
+
 
 if __name__ == "__main__":
     DECK = Deck()
