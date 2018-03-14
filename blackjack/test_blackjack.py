@@ -6,39 +6,50 @@ Tests for blackjack module
 import unittest
 from blackjack import Pack, Game, Player
 
+class InputMock:
+    ''' mock prompter '''
+    def __init__(self, inputs):
+        self.inputs = inputs
+
+    def noop(self):
+        ''' defeat pylint too-few-public methods '''
+        self.inputs = self.inputs
+
+    def prompt(self, prompt_str):
+        ''' just returns the next test response '''
+        # defeat pylint
+        prompt_str = prompt_str
+        return self.inputs.pop(0)
+
 class TestPlayer(unittest.TestCase):
-
-    class InputMock:
-        ''' mock prompter '''
-        def __init__(self, inputs):
-            self.inputs = inputs
-
-        def prompt(self, name):
-            ''' just returns the next test response '''
-            return self.inputs.pop(0)
+    ''' Class for testing Player '''
 
     def test_init(self):
+        ''' Test the __init__ method '''
         print(f"{self.test_init}")
-        player = Player('Jose', 500, TestPlayer.InputMock(list([])))
+        player = Player('Jose', 500, InputMock([]))
         print(f"Initialized player: {player}")
 
     def test_bet(self):
+        ''' Test making a bet '''
         print(f"{self.test_bet}")
-        prompter = TestPlayer.InputMock([10, 100, 101, 50, 9, 11, 'p'])
+        prompter = InputMock([10, 100, 101, 50, 9, 11, 'p'])
         player = Player('Jose', 500, prompter)
-        player.bet(10, 100)
+        wager_limits = (10, 100)
+        player.bet(wager_limits)
         self.assertEqual(player.wager, 10)
-        player.bet(10, 100)
+        player.bet(wager_limits)
         self.assertEqual(player.wager, 100)
-        player.bet(10, 100)
+        player.bet(wager_limits)
         self.assertEqual(player.wager, 50)
-        player.bet(10, 100)
+        player.bet(wager_limits)
         self.assertEqual(player.wager, 11)
-        self.assertFalse(player.bet(10, 100))
+        self.assertFalse(player.bet(wager_limits))
 
     def test_play(self):
+        ''' Test playing '''
         print(f"{self.test_play}")
-        prompter = TestPlayer.InputMock(['y', 'y', 'y'])
+        prompter = InputMock(['y', 'y', 'y'])
         player = Player('Jose', 500, prompter)
         cards = ['10', '10', '10']
         player.play(cards)
@@ -47,8 +58,10 @@ class TestPlayer(unittest.TestCase):
         self.assertTrue(player.hand.val() > 21)
 
 class TestPack(unittest.TestCase):
+    ''' Tests for Pack '''
 
     def test_init(self):
+        ''' Test the __init__ method '''
         print(f"{self.test_init}")
         pack = Pack(1)
         #print(pack)
@@ -58,16 +71,18 @@ class TestPack(unittest.TestCase):
         self.assertEqual(len(pack), 4*52)
 
 class TestBlackjack(unittest.TestCase):
+    ''' Tests for the game '''
 
     def test_play_game(self):
+        ''' Example game session '''
         print(f"{self.test_play_game}")
         max_draws = ['y']*10
         player_inputs = [10] + max_draws
-        game = Game(Player('Dealer', 0, TestPlayer.InputMock(max_draws.copy())),\
+        game = Game(Player('Dealer', 0, InputMock(max_draws.copy())),\
                 Pack(1), (10, 100),\
-                [Player('Dan', 100, TestPlayer.InputMock(player_inputs.copy())),\
-                Player('Gayle', 500, TestPlayer.InputMock(player_inputs.copy())),\
-                Player('Jose', 350, TestPlayer.InputMock(player_inputs.copy()))])
+                [Player('Dan', 100, InputMock(player_inputs.copy())),\
+                Player('Gayle', 500, InputMock(player_inputs.copy())),\
+                Player('Jose', 350, InputMock(player_inputs.copy()))])
         game.play()
         if game.winners:
             print("Winners:")
