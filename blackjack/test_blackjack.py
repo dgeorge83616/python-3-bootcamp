@@ -4,7 +4,9 @@ Tests for blackjack module
 '''
 
 import unittest
-from blackjack import Pack, Game, Player
+from prog import Pack
+from prog import Game
+from prog import Player
 
 class InputMock:
     ''' mock prompter '''
@@ -20,6 +22,18 @@ class InputMock:
         # defeat pylint
         prompt_str = prompt_str
         return self.inputs.pop(0)
+
+class TestRegistration(unittest.TestCase):
+    ''' Class for testing registration '''
+
+    def test_registration(self):
+        ''' simple test for registration '''
+        print(f"{self.test_registration}")
+        players = [Player('Dan', 200, [])]
+        inputs = ['y', players[0].name, str(players[0].balance), 'n']
+        new_players = Game.get_new_players(InputMock(inputs))
+        self.assertEqual(players, new_players)
+
 
 class TestPlayer(unittest.TestCase):
     ''' Class for testing Player '''
@@ -49,11 +63,11 @@ class TestPlayer(unittest.TestCase):
     def test_play(self):
         ''' Test playing '''
         print(f"{self.test_play}")
-        prompter = InputMock(['y', 'y', 'y'])
+        prompter = InputMock(['y',])
         player = Player('Jose', 500, prompter)
-        cards = ['10', '10', '10']
+        player.hand += ['10', '4']
+        cards = ['10']
         player.play(cards)
-        print(f"Hand = {player.hand}")
         self.assertTrue(player.hand)
         self.assertTrue(player.hand.val() > 21)
 
@@ -84,10 +98,7 @@ class TestBlackjack(unittest.TestCase):
                 Player('Gayle', 500, InputMock(player_inputs.copy())),\
                 Player('Jose', 350, InputMock(player_inputs.copy()))])
         game.play()
-        if game.winners:
-            print("Winners:")
-            for winner in game.winners:
-                print(f"       {winner.name}, {winner.hand}")
+        game.settle_bets()
         print(f"pushes: {game.pushes}")
         print(f"busts: {game.inactive_players}")
 

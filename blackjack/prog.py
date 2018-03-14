@@ -96,15 +96,30 @@ class Player:
 
     def play(self, cards):
         ''' play till stand or busted '''
-        while True:
+        while self.hand.val() < 21:
             answer = str(self.prompter.prompt(f"{self.name}, take a card? (y/n): "))
             if answer.lower() != 'y':
                 break
-            elif self.hit(cards.pop()) > 21:
+            elif self.hit(cards.pop()) == 21:
+                print(f"Nice hand, {self.name}! {self.hand}")
                 break
+            print(f"{self.name}:  {self.hand}")
+        else:
+            print("Bust!")
 
 class Game:
     ''' As named '''
+
+    @staticmethod
+    def get_new_players(prompter):
+        ''' As named '''
+        new_players = []
+        while str(prompter.prompt("Register new player? (y/n): ")).lower() == 'y':
+            name = str(prompter.prompt("Enter Player Name: "))
+            bank = int(prompter.prompt("Enter Bank Balance: "))
+            new_players.append(Player(name, bank, prompter))
+        return new_players
+
 
     def __init__(self, dealer, pack, wager_limits, players):
         self.dealer = dealer
@@ -158,9 +173,18 @@ class Game:
             self.winners.append(self.dealer)
         return bool(self.winners)
 
-    def payout(self):
+    def settle_bets(self):
         ''' pay the winners '''
-        pass
+        if bool(self.winners):
+            print("Winners:")
+        for winner in self.winners:
+            if len(winner.hand) == 2 and winner.hand.val() == 21:
+                winner.balance += 2.5*winner.wager
+            else:
+                winner.balance += 2*winner.wager
+            print(f"        {winner.name}, ${winner.balance}")
+        for pusher in self.pushes:
+            pusher.balance += pusher.wager
 
     def play(self):
         ''' main processing loop '''
@@ -190,9 +214,12 @@ class Game:
                 max_hand = max(max_hand, player.hand.val())
         self.remove_inactive_players()
 
-        while self.dealer.hand.val() < 17:
+        print(f"Dealer: {self.dealer.hand}")
+        while self.dealer.hand.val() < max_hand:
             self.dealer.hit(self.pack.pop())
+            print(f"        {self.dealer.hand}")
         if self.dealer.hand.val() > 21:
+            print(f"Dealer bust!")
             self.winners = self.players
             return
 
@@ -202,7 +229,9 @@ class Game:
             if player.hand.val() == self.dealer.hand.val():
                 self.pushes.append(player)
 
-        self.payout()
-
 if __name__ == "__main__":
-    pass
+    NEW_PLAYERS = Game.get_new_players(Prompter())
+    if bool(NEW_PLAYERS):
+        GAME = Game(Player('Dealer', 0, []), Pack(1), (10, 100), NEW_PLAYERS)
+        GAME.play()
+        GAME.settle_bets()
