@@ -2,126 +2,66 @@
 
 '''
 CHANGE BACK
+Author: Dan George
 
-This program takes a purchase total and some cash. It
-returns the number of bills and coins needed for change.
-
-- Returns minimum amount of bills and coins.
-
-Algorithm:
-
-    cash_back = cash_tendered - purchase_price
-    pennies = cash_back % 5 cents / 1 cent
-    nickels = cash_back % 10 cents / 5 cents
-    dimes = cash_back % 10 cents / 10 cents
-    denomination count = cash_back % next denomination / denomination
-    if no more denominations
-        denomination_count += int(cash_back/denomination)
-    until sum == cash_back or no more denominations
-
-    pennies = cash_back % 5
-    nickels = cash_back - pennies % 10 / 5 unless
-        cash_back - pennies - nickels * 5 % 25 is not an integer
-        in that case, skip nickels
-
-    How about getting cents and take out 50c, 25c, 10c, 5c?
-    Then, switch to 1,2,5 x 10**n case
+This program runs a check stand. It asks the clerk for a purchase
+total and cash tendered. It counts the change bask to the customer
+in old-school style.
 '''
 
+DENOMINATIONS = {\
+    1: 'penny', 5: 'nickel', 10: 'dime', 25: 'quarter', 50: '50c',\
+    100: '$1', 200: '$2', 500: '$5', 1000: '$10', 2000: '$20'}
 
-PENNY = ('1c', 1)
-NICKEL = ('5c', 5)
-DIME = ('10c', 10)
-QUARTER = ('25c', 25)
-FIFTY_CENT_PIECE = ('50c', 50)
-DOLLAR_BILL = ('$1', 100)
-TWO_DOLLAR_BILL = ('$2', 200)
-FIVE_DOLLAR_BILL = ('$5', 500)
-TEN_DOLLAR_BILL = ('$10', 1000)
-TWENTY_DOLLAR_BILL = ('$20', 2000)
+def bucketize(total, buckets):
+    '''
+    sort total into the buckets defined by buckets parameter
+    return the count and subtotal for each bucket
+    '''
+    counts = {}
+    for value in sorted(iter(buckets), reverse=True):
+        count = int(total / value)
+        subtotal = value * count
+        counts[buckets[value]] = (count, subtotal)
+        total -= subtotal
+        assert total >= 0
+    return counts
 
-DENOMINATIONS = [PENNY, NICKEL, DIME, QUARTER, FIFTY_CENT_PIECE,\
-        DOLLAR_BILL, FIVE_DOLLAR_BILL, TEN_DOLLAR_BILL,\
-        TWENTY_DOLLAR_BILL]
+def count_back(total, change, denominations):
+    ''' count back change -- return the remaining total '''
+    for value in sorted(iter(denominations), reverse=False):
+        name = denominations[value]
+        count, subtotal = change[name]
+        if subtotal != 0:
+            total += subtotal
+            print(f"{count} x {name} for ${total/100.0:0.2f}")
+    return total
 
-class Cash():
-    ''' holds an amount of money partitioned by denominations '''
+def prompt(prompt_str):
+    '''
+    simple prompter expects dollars.cents and returns amount in cents
+    '''
+    done = False
+    while not done:
+        try:
+            return int(100*(round(float(input(prompt_str)), 2)))
+        except (TypeError, ValueError):
+            print("Oops, please enter dollars.cents")
 
-    def __init__(self, amount=0):
-        self.bank = {}
-        for i in range(len(DENOMINATIONS) - 1):
-            symbol, face_value = DENOMINATIONS[i]
-            _, next_face_value = DENOMINATIONS[i + 1]
-            self.bank[symbol] = \
-                    int(amount % next_face_value / face_value)
-            amount -= self.bank[symbol]
-            if amount <= 0:
-                break
-        else:
-            symbol, face_value =\
-                    DENOMINATIONS[len(DENOMINATIONS) - 1]
-            self.bank[symbol] = int(amount / face_value)
-        for i in range(len(self.bank), len(DENOMINATIONS)):
-            self.bank[i] = 0
+def run_check_stand():
+    ''' simulating a supermarket check stand '''
+    while True:
+        try:
+            purchase_total = prompt("Purchase total: $")
+            cash_tendered = 0
+            while cash_tendered < purchase_total:
+                cash_tendered += prompt("Cash, please: $")
+        except (KeyboardInterrupt, EOFError):
+            print("\nThis lane CLOSED")
+            return
+        change = bucketize(cash_tendered - purchase_total,\
+                DENOMINATIONS)
+        count_back(purchase_total, change, DENOMINATIONS)
+        print("Bye, bye\n")
 
-    def __str__(self):
-        total = 0
-        header = ''
-        counts = ''
-        amounts = ''
-        for symbol, face_value in DENOMINATIONS:
-            header += symbol + '\t'
-            count = self.bank[symbol] 
-            counts += str(count) + '\t'
-            amount = (self.bank[symbol] * face_value)/100
-            amounts += '$' + format(amount,'0.2f') + '\t'
-            total += amount
-            print(f"{symbol}\t{face_value}\t{count}\t{amount}\t{total:0.2f}")
-        assert(total == self.total())
-        return header + '\n'\
-                + counts + '\n'\
-                + amounts + '\t$' + str(total) + '\n'
-
-    def __repr__(self):
-        return self.bank.__repr__()
-
-    def __sub__(self, less):
-        print(less)
-        return Cash(self.total() - less.total())
-
-    def total(self):
-        ''' Total value of tbe bag '''
-        total = 0
-        for symbol, face_value in DENOMINATIONS:
-            total += self.bank[symbol] * face_value
-        return float(total)/100
-
-    def noop(self):
-        ''' just to avoid too-few-public-methods '''
-
-print(Cash(495))
-#print(Cash(5896))
-#print(Cash(896))
-#print(f"{Cash(896)!r}")
-
-#purchase = Cash(495)
-#cash_tendered = Cash(2000)
-#print(purchase, cash_tendered)
-#change = cash_tendered - purchase
-#print(f"{change}")
-#def cash_back(cash_tendered=0, purchase_price=0):
-#    pass
-#class CashDrawer():
-#    '''
-#    Payments go into the cash drawer and change comes from it.
-#    '''
-#
-#    __init__(self, twenties = 5, tens = 5, twos = 0, ones = 20,\
-#            fifty_cent_pieces = 0, quarters = 40, dimes = 50,\
-#            nickels = 40, pennies = 100):
-#        self.bank = {TWENT" : twenties
-#        self.tens = tens
-#        self.ones = ones
-#        self.fifty_cent_piece = fifty_cent_pieces
-#        self.quarters =
-#
+run_check_stand()
